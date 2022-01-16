@@ -4,10 +4,12 @@
 #include "fa2_nft_token.mligo"
 #include "nft_token_manager.mligo"
 #include "../admin/simple_admin.mligo"
+#include "../minter_admin/multi_minter_admin.mligo"
 
 type asset_storage = {
   assets : nft_token_storage;
   admin : admin_storage;
+  minter : minter_admin_storage;
   metadata : contract_metadata;
   (** 
   If this flag is set, no more minting operations permitted.
@@ -19,6 +21,7 @@ type asset_storage = {
 type asset_entrypoints =
   | Assets of fa2_entry_points
   | Admin of admin_entrypoints
+  | Minter_admin of minter_admin_entrypoints
   | Mint of mint_param list
   | Mint_freeze
 
@@ -29,6 +32,11 @@ let nft_asset_main(param, storage : asset_entrypoints * asset_storage)
     let ops, admin = admin_main (a, storage.admin) in
     let new_s = { storage with admin = admin; } in
     (ops, new_s)
+
+  | Minter_admin a ->
+    let _ = fail_if_not_admin storage.admin in
+    let ops, new_minter = minter_admin_main (a, storage.minter) in
+    ops, { storage with minter = new_minter; }
 
   | Assets fa2 ->
     let _ = fail_if_paused storage.admin in
@@ -41,7 +49,10 @@ let nft_asset_main(param, storage : asset_entrypoints * asset_storage)
     ([] : operation list), {storage with mint_freeze = true; }
 
   | Mint m ->
-    let _ = fail_if_not_admin storage.admin in
+    let _ = fail_if_paused storage.admin in
+    let _ = if not is_minter storage.minter
+    then (failwith "NOT_MINTER")
+    else () in
     let _ = if storage.mint_freeze then failwith "FROZEN" else () in
     let mint_in = {
       ledger = storage.assets.ledger;
@@ -65,6 +76,7 @@ let sample_storage : asset_storage = {
     pending_admin = (None : address option);
     paused = false;
   };
+  minter = (Big_map.empty : (address, unit) big_map);
   metadata = Big_map.literal [
     ("", Bytes.pack "tezos-storage:content" );
     ("content", 0x00) (* bytes encoded UTF-8 JSON *)
