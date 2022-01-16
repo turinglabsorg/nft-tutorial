@@ -39,6 +39,7 @@ export function createNftStorage(owner: string, metaJson: string) {
     pending_admin: undefined,
     paused: false
   };
+  const minter = new MichelsonMap();
   const metadata = new MichelsonMap<string, bytes>();
   metadata.set('', char2Bytes('tezos-storage:content'));
   metadata.set('content', char2Bytes(metaJson));
@@ -46,6 +47,7 @@ export function createNftStorage(owner: string, metaJson: string) {
   return {
     assets,
     admin,
+    minter,
     metadata,
     mint_freeze: false
   };
