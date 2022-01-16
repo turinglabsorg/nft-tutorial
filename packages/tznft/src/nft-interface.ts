@@ -21,11 +21,15 @@ export interface MintParam {
 export interface NftContract {
   mintTokens: (tokens: MintParam[]) => ContractMethod<ContractProvider>;
   freezeCollection: () => ContractMethod<ContractProvider>;
+  addMinter: (minter: address) => ContractMethod<ContractProvider>;
+  removeMinter: (minter: address) => ContractMethod<ContractProvider>;
 }
 
 export const Nft = (contract: Tzip12Contract): NftContract => ({
   mintTokens: tokens => contract.methods.mint(tokens),
-  freezeCollection: () => contract.methods.mint_freeze()
+  freezeCollection: () => contract.methods.mint_freeze(),
+  addMinter: minter => contract.methods.add_minter(minter),
+  removeMinter: minter => contract.methods.remove_minter(minter)
 });
 
 export function createNftStorage(owner: string, metaJson: string) {

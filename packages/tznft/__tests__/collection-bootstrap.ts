@@ -9,14 +9,14 @@ import { originateContract } from '@oxheadalpha/tezos-tools';
 const tzip16Meta = {
   name: 'Test',
   description: 'Awesome NFT collection',
-  homepage: 'https://github.com/oxheadalpha/nft-tutorial',
+  homepage: 'https://github.com/turinglabsorg/nft-tutorial',
   authors: ['John Doe <john.doe@johndoe.com>'],
   version: '1.0.0',
   license: { name: 'MIT' },
   interfaces: ['TZIP-016', 'TZIP-012', 'TZIP-021'],
   source: {
     tools: ['LIGO'],
-    location: 'https://github.com/oxheadalpha/nft-tutorial'
+    location: 'https://github.com/turinglabsorg/nft-tutorial'
   }
 };
 
@@ -42,4 +42,8 @@ createTokenMetadata(
 export const mintTestTokens = (nft : NftContract, owner: address) => {
   const tokens = [1, 2].map(tokenMeta);
   return nft.mintTokens([{ owner, tokens }]);
+}
+
+export const addMinter = (nft : NftContract, minter: address) => {
+  return nft.addMinter(minter);
 }

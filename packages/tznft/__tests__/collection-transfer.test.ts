@@ -11,7 +11,11 @@ import {
 import { Nft } from '../src/nft-interface';
 
 import { TestApi, bootstrap } from './test-bootstrap';
-import { mintTestTokens, originateCollection } from './collection-bootstrap';
+import {
+  mintTestTokens, 
+  originateCollection,
+  addMinter
+} from './collection-bootstrap';
 
 jest.setTimeout(240000);
 
@@ -31,6 +35,9 @@ describe('FA2 Token Transfer Tests', () => {
   beforeEach(async () => {
     collectionAddress = await originateCollection(api.bob.toolkit);
     const nft = (await api.bob.at(collectionAddress)).with(Nft);
+    console.log('Collection address is:', collectionAddress)
+    console.log('Adding bob to minters so it can mint..')
+    await runMethod(addMinter(nft, bobAddress));
     await runMethod(mintTestTokens(nft, bobAddress));
   });
 

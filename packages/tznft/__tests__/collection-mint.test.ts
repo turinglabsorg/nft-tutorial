@@ -7,7 +7,8 @@ import { TestApi, bootstrap } from './test-bootstrap';
 import {
   mintTestTokens,
   originateCollection,
-  tokenMeta
+  tokenMeta,
+  addMinter
 } from './collection-bootstrap';
 
 jest.setTimeout(240000);
@@ -26,7 +27,13 @@ describe('NFT Collection Minting Tests', () => {
   });
 
   beforeEach(async () => {
+    console.log('Originating collection..')
     collectionAddress = await originateCollection(api.bob.toolkit);
+    console.log('Collection address is:', collectionAddress)
+    console.log('Adding bob to minters so it can mint..')
+    const nft = (await api.bob.at(collectionAddress)).with(Nft);
+    await runMethod(addMinter(nft, bobAddress));
+    console.log('Bob added to minter!')
   });
 
   test('mint', async () => {
@@ -70,10 +77,10 @@ describe('NFT Collection Minting Tests', () => {
     await expect(run).rejects.toHaveProperty('message', 'USED_TOKEN_ID');
   });
 
-  test('non-admin mint tokens', async () => {
+  test('non-minter mint tokens', async () => {
     const nft = (await api.alice.at(collectionAddress)).with(Nft);
     const run = runMethod(mintTestTokens(nft, bobAddress));
 
-    await expect(run).rejects.toHaveProperty('message', 'NOT_AN_ADMIN');
+    await expect(run).rejects.toHaveProperty('message', 'NOT_MINTER');
   });
 });
